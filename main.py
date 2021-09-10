@@ -8,16 +8,19 @@ Api_Keys contain the secret api keys to access newsapi and weatherapi
 from os import system
 
 # Installing required module to use the app
+"""
 try:
     system("pip install -r requirements.txt") # may give error if requirements.txt not exists
 except Exception as e:
     system("pip install requests") # installing reqiest module
-
+"""
 
 import api_keys
 import requests
 import json
 from colors import *
+import wikipedia as wiki
+from time import sleep
 
 # Url for news api
 news_url = "https://newsapi.org/v2/top-headlines?country=in&apiKey="+api_keys.news_api
@@ -35,20 +38,55 @@ class Location:
         print("Type the following to get desired result")
         blue()
         print("1 - To type the latitude or longitude")
+        red()
+        print("Note : Might throught Exception if coordintates are not correct")
+        blue()
         print("2 - To type the city name")
+        red()
+        print("Note : Only valid city name is supported. Wrong city name throws an error")
+        blue()
         print("3 - To automatically detect location using GPS( Google play services)")
+        red()
+        print("Note : Only tested for linux system")
         reset()
 
-    def get_location(self):
-        pass
-
+    def get_weather(self):
+        weather_api_url = f"https://api.openweathermap.org/data/2.5/weather?lat={self.latitude}&lon={self.longitude}&appid={api_keys.weather_api}"
+        weather_data = requests.get(weather_api_url).text
+        weather_obj = (json.loads(weather_data))
+        blue()
+        print("Weather Conditions : ",weather_obj.get('weather')[0].get('main'))
+        print("Weather Description : ",weather_obj.get('weather')[0].get('description'))
+        red()
+        print("Temerature : ",float(weather_obj['main']['temp'])-273,"C")
+        print("Temerature Feels Like : ",float(weather_obj['main']['feels_like'])-273,"C")
+        print("Maximum Temerature : ",float(weather_obj['main']['temp_max'])-273,"C")
+        print("Pressure : ",weather_obj['main']['pressure'],"atm")
+        print("Humidity : ",weather_obj['main']['humidity'],"%")
+        purple()
+        print("Country : ",weather_obj.get('sys').get('country'))
+        print("Sun Rise : ",weather_obj['sys']['sunrise'],"seconds")
+        print("Sun Set : ",weather_obj['sys']['sunset'],"seconds")
+        print("Time Zone : ",weather_obj['timezone'],"seconds")
+        yellow()
+        print("Coordinates : ",weather_obj.get('coord'))
     @staticmethod
-    def get_location_by_city():
-        pass
+    def get_weather_by_city(city):
+        weather_api_url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_keys.weather_api}"
+        weather_details = json.loads(requests.get(weather_api_url).text)
+        lat = weather_details.get("coord").get("lat")
+        lon = weather_details.get("coord").get("lon")
+        coordinates = Location(lat,lon)
+        coordinates.get_weather()
 
     @staticmethod
     def detect_location():
-        pass
+        system("curl ipinfo.io/loc > coordinates.txt")
+        coordinate = open("coordinates.txt","r").read()
+        sep = coordinate.find(",")
+        location = Location(coordinate[0:sep],coordinate[sep+1:len(coordinate)-1])
+        location.get_weather()
+        system("rm coordinates.txt")
 
 # News class for making news objects
 class News:
@@ -83,16 +121,29 @@ def get_news(url):
         read_more = news['url']
         news_obj = News(title,desc,time,author)
         red()
-        print(news_obj.title)
+        print("Title : ",news_obj.title)
         blue()
-        print(news_obj.information)
+        print("Hint : ",news_obj.information)
         yellow()
-        print(news_obj.date)
+        print("Date : ",news_obj.date)
         purple()
-        print(news_obj.author)
-        red()
+        print("Author : ",news_obj.author)
+        green()
         print("Read More at :", read_more)
         print()
+
+def search_wiki(topic):
+    try:
+        blue()
+        about = wiki.summary(topic)
+        print(about)
+    except Exception as e:
+        results = wiki.search(topic)
+        red()
+        print("Sorry, No results found. Possible searches may be")
+        purple()
+        for suggestion in results:
+            print(suggestion)
 
 # Basic app class contain the guide for using app
 class App:
@@ -120,17 +171,16 @@ if __name__ == "__main__":
         Location.user_manual()
         location_choice = input("Select from options : ")
         if location_choice == "1":
-            latitude = int(input("Enter Latitude : "))
-            longitude = int(input("Enter Longitude : "))
+            latitude = input("Enter Latitude : ")
+            longitude = input("Enter Longitude : ")
             location = Location(latitude, longitude)
-            location.get_location()
+            location.get_weather()
 
         elif location_choice == "2":
             city = input("Enter City name : ")
-            Location.get_location_by_city();
+            Location.get_weather_by_city(city);
 
         elif location_choice == "3":
-            print("Detecting the location....")
             Location.detect_location()
 
         else:
@@ -142,7 +192,8 @@ if __name__ == "__main__":
         get_news(news_url)
 
     elif user_aim == "3":
-        pass
+        topic = input("Enter topic to search : ")
+        search_wiki(topic)
 
     else:
         red()
@@ -150,4 +201,3 @@ if __name__ == "__main__":
         reset()
 
     reset()
-    print("Hello Devesh")
