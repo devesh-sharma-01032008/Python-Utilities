@@ -6,14 +6,12 @@ Api_Keys contain the secret api keys to access newsapi and weatherapi
 
 """
 from os import system
-
+import sys
 # Installing required module to use the app
-"""
 try:
     system("pip install -r requirements.txt") # may give error if requirements.txt not exists
 except Exception as e:
     system("pip install requests") # installing reqiest module
-"""
 
 import api_keys
 import requests
@@ -159,6 +157,9 @@ class App:
         print("q - to exit the program")
         reset()
 
+def delete_last_line():
+	sys.stdout.write("\x1b[2K")
+
 # To make it usable in other files without showing the actual file prompt in the terminal
 if __name__ == "__main__":
     App.user_manual()
@@ -200,4 +201,12 @@ if __name__ == "__main__":
         print("Select a correct option")
         reset()
 
+    red()
+    for  i in range(2):
+        print("Exiting program in "+str(3-i),end="\r")
+        sleep(1)
+
+    delete_last_line()
+    blue()
+    print("\nProgram Ended Successfully")
     reset()
