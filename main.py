@@ -7,18 +7,22 @@ Api_Keys contain the secret api keys to access newsapi and weatherapi
 """
 from os import system
 import sys
+from utils.convert_pdf_to_mp3 import save_pdf_file_as_txt,save_txt_file_as_mp3,play_music
 # Installing required module to use the app
 try:
     system("pip install -r requirements.txt") # may give error if requirements.txt not exists
+    system("clear") # may give error in windows
 except Exception as e:
-    system("pip install requests") # installing reqiest module
+    system("cls")
+    system("pip install requests") # installing request module
 
-import api_keys
+from utils import api_keys
 import requests
 import json
-from colors import *
+from utils.colors import *
 import wikipedia as wiki
 from time import sleep
+
 
 # Url for news api
 news_url = "https://newsapi.org/v2/top-headlines?country=in&apiKey="+api_keys.news_api
@@ -154,6 +158,9 @@ class App:
         print("1 - for the temperature of your localiy by using latitude , longitude or city name")
         print("2 - for the news about the india")
         print("3 - for the wikipedia search for articles")
+        print("4 - to convert pdf file to text file")
+        print("5 - to convert pdf file to mp3 file")
+        print("6 - to convert pdf file to mp3 and play it.")
         print("q - to exit the program")
         reset()
 
@@ -196,6 +203,18 @@ if __name__ == "__main__":
         topic = input("Enter topic to search : ")
         search_wiki(topic)
 
+    elif user_aim == "4":
+        filename = input("Enter pdf file name to convert into text file : ")
+        save_pdf_file_as_txt(filename)
+    elif user_aim == "5":
+        filename = input("Enter pdf file name to convert into mp3 file : ")
+        save_pdf_file_as_txt(filename)
+        save_txt_file_as_mp3(filename.split(".")[0]+".txt")
+    elif user_aim == "6":
+        filename = input("Enter pdf file name to convert into mp3 file  and play it: ")
+        save_pdf_file_as_txt(filename)
+        save_txt_file_as_mp3(filename.split(".")[0]+".txt")
+        play_music(filename.split(".")[0]+".mp3")
     else:
         red()
         print("Select a correct option")
@@ -210,3 +229,5 @@ if __name__ == "__main__":
     blue()
     print("\nProgram Ended Successfully")
     reset()
+
+
